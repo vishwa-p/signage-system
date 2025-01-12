@@ -1,0 +1,14 @@
+{
+  "name": "signage-electron-app",
+  "version": "1.0.0",
+  "description": "Electron application for digital signage",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^24.0.0"
+  }
+}

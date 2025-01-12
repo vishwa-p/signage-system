@@ -1,0 +1,41 @@
+body {
+    font-family: Arial, sans-serif;
+  }
+  
+  .toolbar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: #333;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .toolbar button {
+    color: white;
+    background-color: #555;
+    padding: 10px;
+    border: none;
+    margin: 5px;
+    cursor: pointer;
+  }
+  
+  .toolbar button:hover {
+    background-color: #444;
+  }
+  
+  #canvas-container {
+    position: absolute;
+    top: 100px;
+    left: 20px;
+    width: 100%;
+    height: calc(100vh - 120px);
+    border: 2px solid #000;
+  }
+  
+  canvas {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ccc;
+  }
+  
