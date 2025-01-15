@@ -23,6 +23,22 @@
             margin-bottom: 20px;
         }
 
+        #generateKeyContainer,
+        #canvasContainer,
+        #toolbar {
+            margin: 20px auto;
+            width: 80%;
+            max-width: 800px;
+        }
+
+        #screenKey {
+            font-size: 18px;
+            margin: 10px 0;
+            font-weight: bold;
+            color: green;
+        }
+
+
         #canvasContainer {
             width: 100%;
             /* Set parent size as needed */
@@ -30,6 +46,8 @@
             /* Example height */
             position: relative;
             /* Ensure proper positioning */
+            display: none;
+            /* Hidden initially */
         }
 
         #canvas {
@@ -41,6 +59,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+
         }
 
         .widget {
@@ -78,11 +97,16 @@
 <body>
     <h1>Digital Signage Content Builder</h1>
 
+    <div id="generateKeyContainer">
+        <button id="generateKeyButton">Generate Screen Key</button>
+        <p id="screenKey"></p>
+    </div>
+
     <!-- Toolbar with draggable widgets -->
     <div id="toolbar">
         <div class="widget" id="addHeader">Header</div>
         <div class="widget" id="addSlider">Slider</div>
-        <!-- <div class="widget" id="addWeather">Weather</div> -->
+
         <div class="widget" id="addDateTime">Time/Date</div>
         <div class="widget" id="addIframe">Iframe</div>
         <div class="widget" id="addImage">Image</div> <!-- Image Widget -->
@@ -91,10 +115,9 @@
         <div class="widget" id="addRectangle">Rectangle</div> <!-- Rectangle Widget -->
         <div class="widget" id="addCircle">Circle</div> <!-- Circle Widget -->
         <div class="widget" id="addTriangle">Triangle</div> <!-- Triangle Widget -->
-        <!-- <div class="widget" id="addArrow">Arrow</div> -->
-        <!-- <div class="widget" id="addGif">GIF</div>
-        <div class="widget" id="addChart">Chart</div>  -->
+
         <button id="saveContent">Save Content</button>
+
         <button id="previewContent">Preview Content</button>
 
     </div>
@@ -119,20 +142,63 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        let screenKey = null;
         // Initialize Fabric.js canvas
         const canvas = new fabric.Canvas('canvas', {
             selection: true, // Allow multiple selections for better manipulation
             backgroundColor: '#f0f0f0', // Set background color for the canvas
         });
 
-        const previewButton = document.getElementById('previewButton');
+        // Function to generate a unique screen key
+        function generateScreenKey() {
+            return Math.random().toString(36).substring(2, 10).toUpperCase();
+        }
+
+        // Elements
+        const generateKeyButton = document.getElementById('generateKeyButton');
+        const screenKeyElement = document.getElementById('screenKey');
         const canvasContainer = document.getElementById('canvasContainer');
+        const toolBar = document.getElementById('toolbar');
+        // Generate Screen Key
+        generateKeyButton.addEventListener('click', () => {
+            screenKey = Math.random().toString(36).substr(2, 8); // Generate an 8-character random key
+            screenKeyElement.textContent = `Generated Screen Key: ${screenKey}`;
+            canvasContainer.style.display = 'block'; // Show canvas section
+
+        });
+        const previewButton = document.getElementById('previewButton');
+        const socket = new WebSocket('ws://localhost:8081'); // Connect to WebSocket server on port 8080
+        socket.onopen = () => {
+            console.log('Connected to WebSocket server!');
+            // Send saveCanvas data once connected
+            const screenKey = screenKey; // Example screenKey
+            const canvasData = JSON.stringify(canvas.toJSON());// Example canvasData
+
+            socket.send(JSON.stringify({
+                action: 'saveCanvas',
+                screenKey,
+                canvasData
+            }));
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('Received from backend:', data);
+        };
+
+        socket.onerror = (error) => {
+            console.error('WebSocket Error:', error);
+        };
+
+        socket.onclose = () => {
+            console.log('Disconnected from WebSocket server');
+        };
 
         // Widget Sizes
         const widgetSizes = {
             header: { width: 300, height: 50 },
             slider: { width: 400, height: 50 },
-            // weather: { width: 250, height: 50 },
+
             datetime: { width: 250, height: 50 },
             iframe: { width: 250, height: 150 },
             image: { width: 150, height: 150 },
@@ -141,9 +207,7 @@
             rectangle: { width: 200, height: 100 },
             circle: { radius: 75 },
             triangle: { width: 100, height: 100 },
-            // arrow: { width: 150, height: 50 },
-            // gif: { width: 200, height: 200 },
-            // chart: { width: 400, height: 300 }
+
         };
 
         // Function to add widgets to the canvas
@@ -359,7 +423,7 @@
         // Add Event Listeners for draggable widgets
         document.getElementById('addHeader').addEventListener('click', () => addWidget('header'));
         document.getElementById('addSlider').addEventListener('click', () => addWidget('slider'));
-        // document.getElementById('addWeather').addEventListener('click', () => addWidget('weather'));
+
         document.getElementById('addDateTime').addEventListener('click', () => addWidget('datetime'));
         document.getElementById('addIframe').addEventListener('click', () => addWidget('iframe'));
         document.getElementById('addImage').addEventListener('click', () => addWidget('image'));
@@ -368,22 +432,85 @@
         document.getElementById('addRectangle').addEventListener('click', () => addWidget('rectangle'));
         document.getElementById('addCircle').addEventListener('click', () => addWidget('circle'));
         document.getElementById('addTriangle').addEventListener('click', () => addWidget('triangle'));
-        // document.getElementById('addArrow').addEventListener('click', () => addWidget('arrow'));
-        // document.getElementById('addGif').addEventListener('click', () => addWidget('gif'));
-        // document.getElementById('addChart').addEventListener('click', () => addWidget('chart'));
+
+
+      
+
+        // Save content when "Save Content" button is clicked
+        document.getElementById('saveContent').addEventListener('click', () => {
+            const canvasData = JSON.stringify(canvas.toJSON());
+            if (!screenKey) {
+                alert('Please generate a screen key before saving.');
+                return;
+            }
+            socket.send(
+                JSON.stringify({
+                    action: 'saveCanvas',
+                    screenKey,
+                    canvasData,
+                })
+            );
+        });
 
 
         // Handle saving content
-        document.getElementById('saveContent').addEventListener('click', function () {
-            document.getElementById('loading').style.display = 'block';
-            const jsonData = JSON.stringify(canvas.toJSON());
-            setTimeout(() => {
-                localStorage.setItem('canvasContent', jsonData);
-                alert("Content saved successfully!");
-                document.getElementById('loading').style.display = 'none';
-            }, 1000);
-        });
+        // document.getElementById('saveContent').addEventListener('click', () => {
+        //     console.log('Save Content Button Clicked');
+        //     console.log('Screen Key:', screenKey);
 
+        //     if (!screenKey) {
+        //         alert('Please generate a screen key before saving.');
+        //         return;
+        //     }
+
+        //     try {
+        //         const canvasData = JSON.stringify(canvas.toJSON());
+        //         console.log('Canvas Data:', canvasData);
+
+        //         const requestData = { screenKey, canvasData };
+
+        //         fetch('http://localhost:3000/api/saveCanvas', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             },
+        //             body: JSON.stringify(requestData),
+        //         })
+        //             .then((response) => {
+        //                 console.log('Response Status:', response.status);
+        //                 if (!response.ok) {
+        //                     throw new Error(`HTTP error! status: ${response.status}`);
+        //                 }
+        //                 return response.json();
+        //             })
+        //             .then((data) => {
+        //                 console.log('Response Data:', data);
+        //                 if (data.error) {
+        //                     alert(`Error saving canvas: ${data.error}`);
+        //                 } else {
+        //                     alert('Canvas saved successfully!');
+        //                 }
+        //             })
+        //             .catch((error) => {
+        //                 console.error('Error during fetch:', error);
+        //                 alert('An error occurred while saving the canvas. Please try again.');
+        //             });
+        //     } catch (error) {
+        //         console.error('Unexpected error:', error);
+        //         alert('An unexpected error occurred.');
+        //     }
+        // });
+
+        // Function to retrieve canvas content
+        function loadCanvas(screenKey) {
+            const canvasData = localStorage.getItem(screenKey);
+            if (canvasData) {
+                canvas.loadFromJSON(canvasData, canvas.renderAll.bind(canvas));
+                alert('Canvas loaded successfully!');
+            } else {
+                alert('No canvas found for the provided Screen Key.');
+            }
+        }
 
         // Preview functionality
         document.getElementById('previewContent').addEventListener('click', function () {

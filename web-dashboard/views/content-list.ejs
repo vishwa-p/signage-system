@@ -4,35 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content List</title>
+    <link rel="stylesheet" href="/public/styles.css">
 </head>
 <body>
-    <h1>Dashboards</h1>
-
-    <!-- Loop through the content to display each dashboard -->
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% content.forEach(function(item) { %>
-                <tr>
-                    <td><%= item.id %></td>
-                    <td><%= item.title %></td>
-                    <td><%= item.type %></td>
-                    <td><%= item.status %></td>
-                    <td>
-                        <a href="/edit/<%= item.id %>">Edit</a> | 
-                        <a href="/delete/<%= item.id %>">Delete</a>
-                    </td>
-                </tr>
-            <% }); %>
-        </tbody>
-    </table>
+    <h1>Content List</h1>
+    <ul>
+        <% content.forEach(item => { %>
+            <li><strong><%= item.title %></strong> - Type: <%= item.type %></li>
+        <% }) %>
+    </ul>
+    <a href="/editor">Go to Editor</a>
 </body>
 </html>

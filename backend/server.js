@@ -3,105 +3,86 @@ const WebSocket = require('ws');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const app = express();
-const PORT = 3000;
-const wss = new WebSocket.Server({ port: 8080 });
+const port = 8080;
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Setup view engine
+const dbPath = path.join(__dirname, "../db/signage.db");
 
-// Setup view engine and correct path to views folder
-app.set('view engine', 'ejs');
-const viewsPath = path.join(__dirname, '../web-dashboard', 'views');
-app.set('views', viewsPath);
-console.log('Views Path:', viewsPath);  // Log to verify the path
 
-// Database setup
-const dbPath = path.join(__dirname, '../db/signage.db');
+
+// SQLite database setup
 const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) console.error('Failed to connect to database:', err.message);
-    else console.log('Connected to SQLite database');
+    if (err) {
+        console.error('Error opening database:', err.message);
+    } else {
+        console.log('Connected to SQLite database.');
+        db.run(`CREATE TABLE IF NOT EXISTS content (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            screen_key TEXT NOT NULL,
+            canvas_data TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
+    }
 });
 
-// Create tables
-db.run(
-    `CREATE TABLE IF NOT EXISTS content (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        type TEXT NOT NULL,
-        data TEXT NOT NULL,
-        status TEXT DEFAULT 'unsynced'
-    )`,
-    (err) => {
-        if (err) console.error('Error creating table:', err.message);
-    }
-);
+// WebSocket server setup
+const wss = new WebSocket.Server({ port: 8081 }, () => {
+    console.log('WebSocket server is running on ws://localhost:8081');
+});
 
-// WebSocket setup
 wss.on('connection', (ws) => {
-    console.log('Client connected');
-    ws.send(JSON.stringify({ message: 'Connected to WebSocket server!' }));
+    console.log('New WebSocket connection established.');
 
     ws.on('message', (message) => {
         try {
             const data = JSON.parse(message);
-            console.log('Received:', data);
 
-            if (data.action === 'sync') {
-                db.all('SELECT * FROM content', (err, rows) => {
-                    if (err) ws.send(JSON.stringify({ error: err.message }));
-                    else ws.send(JSON.stringify({ action: 'sync', content: rows }));
-                });
+            if (data.action === 'saveCanvas') {
+                const { screenKey, canvasData } = data;
+
+                // Save the data to SQLite
+                db.run(
+                    `INSERT INTO content (screen_key, canvas_data) VALUES (?, ?)`,
+                    [screenKey, canvasData],
+                    function (err) {
+                        if (err) {
+                            console.error('Error inserting data:', err.message);
+                            ws.send(
+                                JSON.stringify({ status: 'error', message: err.message })
+                            );
+                        } else {
+                            console.log('Data saved with ID:', this.lastID);
+                            ws.send(
+                                JSON.stringify({ status: 'success', id: this.lastID })
+                            );
+                        }
+                    }
+                );
             }
         } catch (err) {
-            console.error('Invalid WebSocket message:', err.message);
-            ws.send(JSON.stringify({ error: 'Invalid message format' }));
+            console.error('Error processing message:', err.message);
+            ws.send(JSON.stringify({ status: 'error', message: 'Invalid data format' }));
         }
     });
 
-    ws.on('close', () => console.log('Client disconnected'));
+    ws.on('close', () => {
+        console.log('WebSocket connection closed.');
+    });
 });
 
-// API for content management
-app.use(express.json());
-app.post('/content', (req, res) => {
-    const { title, type, data } = req.body;
-    // In this case, a dashboard might be a type of content
-    db.run(
-        'INSERT INTO content (title, type, data, status) VALUES (?, ?, ?, ?)',
-        [title, type, data, 'unsynced'],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ id: this.lastID, message: 'Dashboard created successfully' });
-        }
-    );
-});
-
-// app.post('/content', (req, res) => {
-//     const { title, type, data } = req.body;
-//     db.run(
-//         'INSERT INTO content (title, type, data) VALUES (?, ?, ?)',
-//         [title, type, data],
-//         function (err) {
-//             if (err) return res.status(500).json({ error: err.message });
-//             res.status(201).json({ id: this.lastID });
-//         }
-//     );
-// });
-
-// Get all content and render on content-list page
-app.get('/content-list', (req, res) => {
-    db.all('SELECT * FROM content', (err, rows) => {
+// Express route to fetch stored content
+app.get('/content', (req, res) => {
+    db.all(`SELECT * FROM content`, [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('Error fetching data:', err.message);
+            res.status(500).json({ status: 'error', message: err.message });
+        } else {
+            res.json({ status: 'success', data: rows });
         }
-        // Render the EJS view, passing the content data
-        res.render('content-list', { content: rows });
     });
 });
 
-// Root route
-app.get('/', (req, res) => {
-    res.send('Welcome to the backend server');
+// Start the Express server
+app.listen(port, () => {
+    console.log(`Express server is running on http://localhost:${port}`);
 });
-
-// Start the server
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

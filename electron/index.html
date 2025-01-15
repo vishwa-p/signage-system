@@ -1,17 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Signage Display</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Electron Display App</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+
+        #main-content {
+            text-align: center;
+        }
+
+        #connection-status {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 14px;
+        }
+
+        #error-message {
+            color: red;
+            font-size: 16px;
+        }
+    </style>
 </head>
+
 <body>
-    <div id="toolbar">
-        <button id="syncBtn">Manual Sync</button>
-        <span id="connectionStatus">Checking...</span>
+    <div id="main-content">
+        <h1>Content is loaded in full screen 1920*1080</h1>
+        <img id="display-image" src="placeholder.png" alt="Content" style="max-width: 100%; max-height: 80vh;">
+        <p id="display-text">Welcome to the Electron Display Application</p>
     </div>
-    <div id="contentArea"></div>
-    <script src="renderer.js"></script>
+    <div id="connection-status"></div>
+    <div id="error-message"></div>
+
+    <p>Enter the screen key to retrieve and display the saved canvas.</p>
+
+    <div>
+        <input type="text" id="screenKey" placeholder="Enter Screen Key" />
+        <button id="fetchCanvas">Fetch Canvas</button>
+    </div>
+
+    <div id="message"></div>
+
+    <div id="canvas-container">
+        <canvas id="displayCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <script>
+        document.getElementById('fetchCanvas').addEventListener('click', async () => {
+            const screenKey = document.getElementById('screenKey').value.trim();
+            const messageElement = document.getElementById('message');
+            const canvas = document.getElementById('displayCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Clear any existing message and canvas
+            messageElement.textContent = '';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!screenKey) {
+                messageElement.textContent = 'Please enter a screen key.';
+                return;
+            }
+
+            try {
+                // Fetch data from the API
+                const response = await fetch('http://localhost:8080/content');
+                if (!response.ok) {
+                    throw new Error(`Error fetching data: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                if (data.status !== 'success') {
+                    throw new Error('Error retrieving data.');
+                }
+
+                // Find the canvas data for the entered screen key
+                const matchingContent = data.data.find(item => item.screen_key === screenKey);
+
+                if (!matchingContent) {
+                    messageElement.textContent = `No canvas found for screen key: ${screenKey}`;
+                    return;
+                }
+
+                // Parse the canvas data and load it onto the canvas
+                const canvasData = JSON.parse(matchingContent.canvas_data);
+                const fabricCanvas = new fabric.Canvas(canvas);
+                fabricCanvas.loadFromJSON(canvasData, () => {
+                    fabricCanvas.renderAll();
+                });
+
+                messageElement.textContent = 'Canvas loaded successfully!';
+                messageElement.style.color = 'green';
+
+            } catch (error) {
+                console.error('Error:', error);
+                messageElement.textContent = 'An error occurred while fetching the canvas.';
+            }
+        });
+    </script>
+
+    <!-- Add Fabric.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 </body>
+
 </html>

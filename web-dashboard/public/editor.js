@@ -1,6 +1,6 @@
 // Initialize Fabric.js canvas
 const canvas = new fabric.Canvas('canvas');
-
+const ws = new WebSocket('ws://localhost:8080');
 // Function to add widgets to the canvas
 function addWidget(type) {
     let widget;
