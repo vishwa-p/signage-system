@@ -73,6 +73,25 @@ function displayError(message) {
     contentArea.appendChild(errorDiv);
 }
 
+
+// Request connection status from main process
+ipcRenderer.send('offline-status-request');
+
+// Listen for the offline-status event
+ipcRenderer.on('offline-status', (event, status) => {
+    console.log('Received Connection Status:', status ? 'Online' : 'Offline');
+    const statusElement = document.getElementById('status');
+
+    if (statusElement) {
+        if (status) {
+            statusElement.textContent = 'Online';
+            statusElement.className = 'online';
+        } else {
+            statusElement.textContent = 'Offline';
+            statusElement.className = 'offline';
+        }
+    }
+});
 // Initial Load
 fetchContent();
 updateConnectionStatus();

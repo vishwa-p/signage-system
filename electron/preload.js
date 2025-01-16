@@ -1,4 +1,4 @@
-const { ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 window.addEventListener('DOMContentLoaded', () => {
   // Monitor online/offline status
@@ -10,6 +10,10 @@ window.addEventListener('DOMContentLoaded', () => {
     statusElement.style.color = isOnline ? 'green' : 'red';
   };
 
+  contextBridge.exposeInMainWorld('electronAPI', {
+    requestStatus: () => ipcRenderer.send('offline-status-request'),
+    onStatusUpdate: (callback) => ipcRenderer.on('offline-status', (event, status) => callback(status)),
+});
   window.addEventListener('online', updateConnectionStatus);
   window.addEventListener('offline', updateConnectionStatus);
   updateConnectionStatus();

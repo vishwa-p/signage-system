@@ -8,14 +8,22 @@
     <style>
         body {
             margin: 0;
+            padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #f4f4f4;
+            background-color: #f4f8fb;
             font-family: Arial, sans-serif;
+            height: 100vh;
         }
-
+        #main-content img {
+            max-width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
         #main-content {
+            width: 100%;
             text-align: center;
         }
 
@@ -29,42 +37,158 @@
         #error-message {
             color: red;
             font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #container {
+            position: absolute;
+            bottom: 20%;
+            background: white;
+            width: 400px;
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-size: 16px;
+            color: red;
+        }
+
+        #canvas-container {
+            margin-top: 20px;
+            display: none;
+            /* Hidden until a canvas is successfully loaded */
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+        }
+
+        input {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #status.online {
+            color: green;
+        }
+
+        #status.offline {
+            color: red;
         }
     </style>
 </head>
 
 <body>
+    <!-- Main Content -->
     <div id="main-content">
-        <h1>Content is loaded in full screen 1920*1080</h1>
-        <img id="display-image" src="placeholder.png" alt="Content" style="max-width: 100%; max-height: 80vh;">
-        <p id="display-text">Welcome to the Electron Display Application</p>
-    </div>
-    <div id="connection-status"></div>
-    <div id="error-message"></div>
-
-    <p>Enter the screen key to retrieve and display the saved canvas.</p>
-
-    <div>
-        <input type="text" id="screenKey" placeholder="Enter Screen Key" />
-        <button id="fetchCanvas">Fetch Canvas</button>
+        <img id="display-image" src="logo.jpg" alt="Content">
     </div>
 
+    <div id="container">
+        <p>Enter the screen key to receive your content on this device.</p>
+        <h2>Enter Screen ID</h2>
+        <input type="text" id="screenKey" placeholder="Enter or paste your ID" />
+        <button id="fetchCanvas">Activate</button>
+    </div>
+    <!-- Status Messages -->
     <div id="message"></div>
 
+    <!-- Canvas Container -->
     <div id="canvas-container">
         <canvas id="displayCanvas" width="800" height="600"></canvas>
     </div>
 
+    <!-- <div id="status" class="offline">Checking status...</div> -->
+    <!-- Script -->
     <script>
-        document.getElementById('fetchCanvas').addEventListener('click', async () => {
-            const screenKey = document.getElementById('screenKey').value.trim();
-            const messageElement = document.getElementById('message');
-            const canvas = document.getElementById('displayCanvas');
-            const ctx = canvas.getContext('2d');
+        // Elements
+        const screenKeyInput = document.getElementById('screenKey');
+        const fetchButton = document.getElementById('fetchCanvas');
+        const messageElement = document.getElementById('message');
+        const canvasContainer = document.getElementById('canvas-container');
+        const canvas = document.getElementById('displayCanvas');
+        const ctx = canvas.getContext('2d');
 
-            // Clear any existing message and canvas
+        // Fabric.js canvas initialization
+        let fabricCanvas;
+
+        fetchButton.addEventListener('click', async () => {
+            const screenKey = screenKeyInput.value.trim();
+
+            // Clear previous messages and reset canvas
             messageElement.textContent = '';
+            messageElement.style.color = 'red';
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasContainer.style.display = 'none'; // Hide canvas container initially
 
             if (!screenKey) {
                 messageElement.textContent = 'Please enter a screen key.';
@@ -91,15 +215,22 @@
                     return;
                 }
 
-                // Parse the canvas data and load it onto the canvas
+                // Parse the canvas data and load it onto the Fabric.js canvas
                 const canvasData = JSON.parse(matchingContent.canvas_data);
-                const fabricCanvas = new fabric.Canvas(canvas);
+
+                // Initialize Fabric.js canvas if not already initialized
+                if (!fabricCanvas) {
+                    fabricCanvas = new fabric.Canvas(canvas);
+                } else {
+                    fabricCanvas.clear(); // Clear any existing content
+                }
+
                 fabricCanvas.loadFromJSON(canvasData, () => {
                     fabricCanvas.renderAll();
+                    canvasContainer.style.display = 'block'; // Show the canvas container
+                    messageElement.textContent = 'Canvas loaded successfully!';
+                    messageElement.style.color = 'green';
                 });
-
-                messageElement.textContent = 'Canvas loaded successfully!';
-                messageElement.style.color = 'green';
 
             } catch (error) {
                 console.error('Error:', error);
@@ -110,6 +241,8 @@
 
     <!-- Add Fabric.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <script src="./renderer.js"></script>
+    </script>
 </body>
 
 </html>

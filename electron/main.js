@@ -63,6 +63,8 @@ function createWindow() {
     fullscreen: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false, // Secure
+      contextIsolation: true,
     },
   });
 
@@ -108,7 +110,17 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Handle offline content logic
-ipcMain.on('offline-status', (event, status) => {
-  console.log('Connection Status:', status ? 'Online' : 'Offline');
-});
+// Example logic to simulate connection status changes
+ipcMain.on('offline-status-request', (event) => {
+  const isOnline = true; // Replace with actual status check logic
+  console.log('Connection Status:', isOnline ? 'Online' : 'Offline');
+  event.sender.send('offline-status', isOnline); // Send status to renderer
+})
+
+setTimeout(() => {
+  const { BrowserWindow } = require('electron');
+  const win = BrowserWindow.getAllWindows()[0]; // Get the active window
+  if (win) {
+      win.webContents.send('offline-status', true); // Send 'Online' status
+  }
+}, 2000);

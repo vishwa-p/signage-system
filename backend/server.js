@@ -177,6 +177,18 @@ app.get("/content", (req, res) => {
   });
 });
 
+// API endpoint to fetch content list
+app.get('/api/content', (req, res) => {
+  db.all('SELECT * FROM content ORDER BY timestamp DESC', [], (err, rows) => {
+    if (err) {
+      console.error('Error fetching data:', err.message);
+      res.status(500).json({ status: 'error', message: err.message });
+    } else {
+      res.json({ status: 'success', data: rows });
+    }
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
