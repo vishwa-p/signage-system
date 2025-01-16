@@ -154,6 +154,35 @@
                 margin-top: 20px;
             }
         }
+
+        #contentListContainer {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #contentList {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #contentList li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #007bff;
+        }
     </style>
 </head>
 
@@ -200,6 +229,10 @@
         </div>
     </div>
 
+    <div id="contentListContainer">
+        <h3>Content List</h3>
+        <ul id="contentList"></ul>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -222,7 +255,7 @@
         const canvasContainer = document.getElementById('canvasContainer');
         const toolBar = document.getElementById('toolbar');
 
-
+        const contentList = document.getElementById('contentList');
         // Get the elements
         const addImageButton = document.getElementById('addImage');
         const imageInput = document.getElementById('imageInput');
@@ -304,6 +337,7 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'Header' });
                     break;
                 case 'slider':
                     widget = new fabric.Rect({
@@ -315,19 +349,10 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'Slider' });
                     break;
-                    // case 'weather':
-                    widget = new fabric.Textbox('Weather Widget', {
-                        left: 50,
-                        top: 50,
-                        fontSize: 18,
-                        fill: 'blue',
-                        width: widgetSizes.weather.width,
-                        height: widgetSizes.weather.height,
-                        hasControls: true,
-                        lockRotation: true,
-                    });
-                    break;
+                // case 'weather':
+
                 case 'datetime':
                     widget = new fabric.Textbox(new Date().toLocaleString(), {
                         left: 50,
@@ -339,6 +364,7 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'Date/Time' });
                     break;
                 case 'iframe':
                     widget = new fabric.Rect({
@@ -350,6 +376,7 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'iframe' });
                     break;
                 case 'image':
                     addImage.addEventListener('click', () => {
@@ -386,6 +413,7 @@
                                         scaleY: scaleFactor,
                                         hasControls: true,
                                         lockRotation: true, // Disable rotation
+                                        widgetType: 'Image', // Assign widgetType here
                                     });
 
                                     canvas.add(img);
@@ -398,15 +426,8 @@
                             event.target.value = '';
                         }
                     });
-                    // Add a keydown event listener to delete all widgets when 'Delete' is pressed
-                    document.addEventListener('keydown', (event) => {
-                        if (event.key === 'Delete') {
-                            // Clear all objects from the canvas
-                            canvas.clear();
-                        }
-                    });
-                    return;
 
+                    return;
                 case 'text':
                     widget = new fabric.Textbox('Editable Text', {
                         left: 50,
@@ -418,6 +439,7 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'Text' });
                     break;
                 case 'square':
                     widget = new fabric.Rect({
@@ -429,6 +451,7 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'square' });
                     break;
                 case 'rectangle':
                     widget = new fabric.Rect({
@@ -440,6 +463,7 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'rectangle' });
                     break;
                 case 'circle':
                     widget = new fabric.Circle({
@@ -450,6 +474,7 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'circle' });
                     break;
                 case 'triangle':
                     widget = new fabric.Triangle({
@@ -461,67 +486,12 @@
                         hasControls: true,
                         lockRotation: true,
                     });
+                    widget.set({ widgetType: 'triangle' });
                     break;
-                    // case 'arrow':
-                    widget = new fabric.Polyline([
-                        { x: 0, y: 0 },
-                        { x: widgetSizes.arrow.width, y: widgetSizes.arrow.height },
-                        { x: 0, y: widgetSizes.arrow.height },
-                    ], {
-                        fill: 'black',
-                        stroke: 'black',
-                        strokeWidth: 2,
-                        hasControls: true,
-                        lockRotation: true,
-                    });
-                    break;
-                    // case 'gif':
-                    fabric.Image.fromURL('https://media.giphy.com/media/3o7btPCvPOirv2fq7u/giphy.gif', function (img) {
-                        img.set({
-                            left: 50,
-                            top: 50,
-                            width: widgetSizes.gif.width,
-                            height: widgetSizes.gif.height,
-                            hasControls: true,
-                            lockRotation: true,
-                        });
-                        canvas.add(img);
-                    });
+
+
                     return;
-                    // case 'chart':
-                    const chartElement = document.createElement('canvas');
-                    chartElement.width = widgetSizes.chart.width;
-                    chartElement.height = widgetSizes.chart.height;
-                    const chart = new Chart(chartElement, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                            datasets: [{
-                                label: 'Votes',
-                                data: [12, 19, 3, 5, 2, 3],
-                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                borderWidth: 1,
-                            }],
-                        },
-                        options: {
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                },
-                            },
-                        },
-                    });
-                    const chartImage = new fabric.Image(chartElement, {
-                        left: 50,
-                        top: 50,
-                        width: widgetSizes.chart.width,
-                        height: widgetSizes.chart.height,
-                        hasControls: true,
-                        lockRotation: true,
-                    });
-                    canvas.add(chartImage);
-                    return;
+
 
 
             }
@@ -530,9 +500,21 @@
             canvas.add(widget);
             canvas.setActiveObject(widget);
             updatePreview();
+            updateContentList();
         }
 
 
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Delete' || event.key === 'Backspace') {
+                const activeObject = canvas.getActiveObject(); // Get the currently selected object
+                if (activeObject) {
+                    canvas.remove(activeObject); // Remove the selected object from the canvas
+                    canvas.discardActiveObject(); // Deselect the object after removal
+                    canvas.renderAll(); // Re-render the canvas to reflect changes
+                }
+            }
+        });
         function updatePreview() {
             const previewCanvas = new fabric.Canvas('previewCanvas');
             const jsonData = canvas.toJSON();
@@ -555,41 +537,6 @@
 
 
 
-
-        // // Save content when "Save Content" button is clicked
-        // document.getElementById('saveContent').addEventListener('click', () => {
-        //     try {
-        //         // Ensure the canvas object exists and is not null
-        //         if (!canvas) {
-        //             throw new Error('Canvas not initialized.');
-        //         }
-
-        //         const canvasData = JSON.stringify(canvas.toJSON());
-
-        //         // Check if screenKey exists
-        //         if (!screenKey) {
-        //             alert('Please generate a screen key before saving.');
-        //             return;
-        //         }
-
-        //         // Send data to the server
-        //         socket.send(
-        //             JSON.stringify({
-        //                 action: 'saveCanvas',
-        //                 screenKey,
-        //                 canvasData,
-        //             })
-        //         );
-
-        //         // Notify the user that content has been saved
-        //         alert('Content has been saved successfully!');
-
-        //     } catch (error) {
-        //         // Handle any errors that occur during the save process
-        //         console.error('Error saving canvas content:', error);
-        //         alert('An error occurred while saving the content. Please try again.');
-        //     }
-        // });
 
 
         document.getElementById('saveContent').addEventListener('click', () => {
@@ -708,6 +655,24 @@
             };
         });
 
+        function updateContentList() {
+            contentList.innerHTML = ''; // Clear existing list
+            canvas.getObjects().forEach((obj) => {
+                const listItem = document.createElement('li');
+
+                // Display the widget's name
+                const widgetName = obj.widgetType || 'Unnamed Widget';
+                listItem.textContent = widgetName;
+
+                // Add status indicator
+                const status = document.createElement('span');
+                status.classList.add('status');
+                status.textContent = canvas.getActiveObject() === obj ? 'Active' : 'Inactive';
+
+                listItem.appendChild(status);
+                contentList.appendChild(listItem);
+            });
+        }
 
     </script>
 </body>
