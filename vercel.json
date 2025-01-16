@@ -1,24 +1,23 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "backend/app.js",
-        "use": "@vercel/node"
-      },
-      {
-        "src": "web-dashboard/**/*",
-        "use": "@vercel/static"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "/backend/app.js"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/web-dashboard/$1"
-      }
-    ]
-  }
-  
+  "version": 2,
+  "builds": [
+    {
+      "src": "web-dashboard/app.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "web-dashboard/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "web-dashboard/app.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "web-dashboard/$1"
+    }
+  ]
+}

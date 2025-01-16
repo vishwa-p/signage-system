@@ -15,8 +15,11 @@ const db = new sqlite3.Database('../db/signage.db', (err) => {
 // Middleware - Increase JSON body size limit
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '10mb' }));  // Increased limit to 10MB
-app.use(express.static(path.join(__dirname, 'public')));
+// Set up views directory and view engine
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); // Correct path to views folder
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Create tables if not exist
 db.run(`
