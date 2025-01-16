@@ -5,7 +5,6 @@ const path = require("path");
 // Initialize Express server
 const app = express();
 const port = 8080;
-
 app.use(express.static(path.join(__dirname, "public")));
 
 const dbPath = path.join(__dirname, "../db/signage.db");
