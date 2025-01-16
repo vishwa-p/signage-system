@@ -2,19 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "web-dashboard/api/**/*.ejs",
+      "src": "web-dashboard/app.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "web-dashboard/public/**/*",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "web-dashboard/api/$1.js"
+      "dest": "web-dashboard/app.js"
     }
   ]
 }
-

@@ -17,7 +17,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '10mb' }));  // Increased limit to 10MB
 // Set up views directory and view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views')); // Correct path to views folder
+app.set('views', path.join(__dirname, 'views'));
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
