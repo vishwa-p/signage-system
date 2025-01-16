@@ -16,19 +16,55 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            margin: 20px;
+            color: #333;
         }
 
-        #generateKeyContainer,
-        #canvasContainer,
-        #toolbar {
-            margin: 20px auto;
-            width: 80%;
-            max-width: 800px;
+        #mainContainer {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        #generateKeyContainer {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #generateKeyButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        #generateKeyButton:hover {
+            background-color: #0056b3;
         }
 
         #screenKey {
@@ -38,95 +74,125 @@
             color: green;
         }
 
-
         #canvasContainer {
-            width: 100%;
-            /* Set parent size as needed */
-            height: 400px;
-            /* Example height */
-            position: relative;
-            /* Ensure proper positioning */
-            display: none;
-            /* Hidden initially */
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: auto;
         }
 
         #canvas {
             width: 100%;
-            height: 100%;
+            height: 600px;
+            border: 2px solid #ccc;
+            background-color: #f0f0f0;
         }
 
         #toolbar {
             display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-
+            flex-direction: column;
+            gap: 15px;
+            position: sticky;
+            top: 20px;
         }
 
         .widget {
-            margin: 10px;
-            padding: 10px;
-            background-color: #ccc;
+            display: inline-block;
+            padding: 15px;
+            background-color: #eee;
             border-radius: 5px;
             cursor: pointer;
-            width: 100px;
+            width: 100%;
             text-align: center;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
         }
 
         .widget:hover {
-            background-color: #bbb;
+            background-color: #ddd;
         }
 
-        #loading {
-            text-align: center;
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
         }
 
         #previewContainer {
             display: none;
-            /* Hide the preview by default */
             margin-top: 30px;
             text-align: center;
         }
 
         #previewContainer.visible {
             display: block;
-            /* Show when active */
+        }
+
+        /* Scroll responsiveness */
+        @media (max-width: 1200px) {
+            #mainContainer {
+                flex-direction: column;
+            }
+
+            #sidebar {
+                width: 100%;
+                box-shadow: none;
+            }
+
+            #canvasContainer {
+                margin-top: 20px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Digital Signage Content Builder</h1>
 
-    <div id="generateKeyContainer">
-        <button id="generateKeyButton">Generate Screen Key</button>
-        <p id="screenKey"></p>
+
+    <div id="mainContainer">
+        <!-- Sidebar with widgets -->
+        <div id="sidebar">
+            <div id="generateKeyContainer">
+                <button id="generateKeyButton">Generate Screen Key</button>
+                <p id="screenKey"></p>
+            </div>
+            <div id="toolbar">
+                <div class="widget" id="addHeader">Header</div>
+                <div class="widget" id="addSlider">Slider</div>
+                <div class="widget" id="addDateTime">Time/Date</div>
+                <div class="widget" id="addIframe">Iframe</div>
+                <div class="widget" id="addImage">Image</div>
+                <input type="file" id="imageInput" style="display:none" accept="image/*">
+                <img id="previewImage" style="display:none;" width="200" height="200">
+
+                <div class="widget" id="addText">Text</div>
+                <div class="widget" id="addSquare">Square</div>
+                <div class="widget" id="addRectangle">Rectangle</div>
+                <div class="widget" id="addCircle">Circle</div>
+                <div class="widget" id="addTriangle">Triangle</div>
+                <button id="saveContent">Save Content</button>
+                <button id="previewContent">Preview Content</button>
+            </div>
+        </div>
+
+        <!-- Canvas container in the center -->
+        <div id="canvasContainer">
+            <canvas id="canvas" width="800" height="500"></canvas>
+        </div>
     </div>
 
-    <!-- Toolbar with draggable widgets -->
-    <div id="toolbar">
-        <div class="widget" id="addHeader">Header</div>
-        <div class="widget" id="addSlider">Slider</div>
-
-        <div class="widget" id="addDateTime">Time/Date</div>
-        <div class="widget" id="addIframe">Iframe</div>
-        <div class="widget" id="addImage">Image</div> <!-- Image Widget -->
-        <div class="widget" id="addText">Text</div> <!-- Text Widget -->
-        <div class="widget" id="addSquare">Square</div> <!-- Square Widget -->
-        <div class="widget" id="addRectangle">Rectangle</div> <!-- Rectangle Widget -->
-        <div class="widget" id="addCircle">Circle</div> <!-- Circle Widget -->
-        <div class="widget" id="addTriangle">Triangle</div> <!-- Triangle Widget -->
-
-        <button id="saveContent">Save Content</button>
-
-        <button id="previewContent">Preview Content</button>
-
-    </div>
-
-    <!-- Canvas Container -->
-    <div id="canvasContainer">
-        <canvas id="canvas" width="800" height="600"></canvas>
-    </div>
-
+    <!-- Preview Container -->
     <div id="previewContainer">
         <h2>Content Preview</h2>
         <div id="previewCanvasContainer">
@@ -134,10 +200,6 @@
         </div>
     </div>
 
-    <!-- Loading Indicator -->
-    <div id="loading" style="display: none;">
-        <p>Saving content...</p>
-    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -159,11 +221,20 @@
         const screenKeyElement = document.getElementById('screenKey');
         const canvasContainer = document.getElementById('canvasContainer');
         const toolBar = document.getElementById('toolbar');
+
+
+        // Get the elements
+        const addImageButton = document.getElementById('addImage');
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('previewImage');
+
+        screenKey = screenKey; // Example screenKey
+
         // Generate Screen Key
         generateKeyButton.addEventListener('click', () => {
             screenKey = Math.random().toString(36).substr(2, 8); // Generate an 8-character random key
             screenKeyElement.textContent = `Generated Screen Key: ${screenKey}`;
-            canvasContainer.style.display = 'block'; // Show canvas section
+            // canvasContainer.style.display = 'block'; // Show canvas section
 
         });
         const previewButton = document.getElementById('previewButton');
@@ -171,7 +242,7 @@
         socket.onopen = () => {
             console.log('Connected to WebSocket server!');
             // Send saveCanvas data once connected
-            const screenKey = screenKey; // Example screenKey
+
             const canvasData = JSON.stringify(canvas.toJSON());// Example canvasData
 
             socket.send(JSON.stringify({
@@ -184,6 +255,11 @@
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log('Received from backend:', data);
+            if (data.status === 'success') {
+                alert('Canvas saved successfully!');
+            } else {
+                alert('Error saving canvas: ' + data.message);
+            }
         };
 
         socket.onerror = (error) => {
@@ -193,6 +269,8 @@
         socket.onclose = () => {
             console.log('Disconnected from WebSocket server');
         };
+
+
 
         // Widget Sizes
         const widgetSizes = {
@@ -274,19 +352,61 @@
                     });
                     break;
                 case 'image':
-                    fabric.Image.fromURL('https://via.placeholder.com/150', function (img) {
-                        img.set({
-                            left: 50,
-                            top: 50,
-                            angle: 0,
-                            width: widgetSizes.image.width,
-                            height: widgetSizes.image.height,
-                            hasControls: true,
-                            lockRotation: true,
-                        });
-                        canvas.add(img);
+                    addImage.addEventListener('click', () => {
+                        imageInput.click();
+                    });
+
+                    // Handle the image input and add it to the canvas
+                    imageInput.addEventListener('change', (event) => {
+                        const file = event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                // Use Fabric.js to load the image
+                                fabric.Image.fromURL(e.target.result, function (img) {
+                                    // Scale the image to fit within the canvas while maintaining aspect ratio
+                                    const canvasWidth = canvas.getWidth();
+                                    const canvasHeight = canvas.getHeight();
+
+                                    // Get the original dimensions of the image
+                                    const imgWidth = img.width;
+                                    const imgHeight = img.height;
+
+                                    // Calculate the scaling factor to fit the image inside the canvas
+                                    const scaleFactor = Math.min(
+                                        canvasWidth / imgWidth,
+                                        canvasHeight / imgHeight
+                                    );
+
+                                    // Apply the scaling factor
+                                    img.set({
+                                        left: (canvasWidth - imgWidth * scaleFactor) / 2, // Center horizontally
+                                        top: (canvasHeight - imgHeight * scaleFactor) / 2, // Center vertically
+                                        scaleX: scaleFactor,
+                                        scaleY: scaleFactor,
+                                        hasControls: true,
+                                        lockRotation: true, // Disable rotation
+                                    });
+
+                                    canvas.add(img);
+                                    canvas.setActiveObject(img); // Set the image as the active object
+                                });
+                            };
+                            reader.readAsDataURL(file);
+
+                            // Reset the file input to allow the same image to be uploaded again if needed
+                            event.target.value = '';
+                        }
+                    });
+                    // Add a keydown event listener to delete all widgets when 'Delete' is pressed
+                    document.addEventListener('keydown', (event) => {
+                        if (event.key === 'Delete') {
+                            // Clear all objects from the canvas
+                            canvas.clear();
+                        }
                     });
                     return;
+
                 case 'text':
                     widget = new fabric.Textbox('Editable Text', {
                         left: 50,
@@ -434,9 +554,44 @@
         document.getElementById('addTriangle').addEventListener('click', () => addWidget('triangle'));
 
 
-      
 
-        // Save content when "Save Content" button is clicked
+
+        // // Save content when "Save Content" button is clicked
+        // document.getElementById('saveContent').addEventListener('click', () => {
+        //     try {
+        //         // Ensure the canvas object exists and is not null
+        //         if (!canvas) {
+        //             throw new Error('Canvas not initialized.');
+        //         }
+
+        //         const canvasData = JSON.stringify(canvas.toJSON());
+
+        //         // Check if screenKey exists
+        //         if (!screenKey) {
+        //             alert('Please generate a screen key before saving.');
+        //             return;
+        //         }
+
+        //         // Send data to the server
+        //         socket.send(
+        //             JSON.stringify({
+        //                 action: 'saveCanvas',
+        //                 screenKey,
+        //                 canvasData,
+        //             })
+        //         );
+
+        //         // Notify the user that content has been saved
+        //         alert('Content has been saved successfully!');
+
+        //     } catch (error) {
+        //         // Handle any errors that occur during the save process
+        //         console.error('Error saving canvas content:', error);
+        //         alert('An error occurred while saving the content. Please try again.');
+        //     }
+        // });
+
+
         document.getElementById('saveContent').addEventListener('click', () => {
             const canvasData = JSON.stringify(canvas.toJSON());
             if (!screenKey) {
