@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "web-dashboard/api/**/*.js",
+      "src": "web-dashboard/api/**/*.ejs",
       "use": "@vercel/node"
     },
     {
