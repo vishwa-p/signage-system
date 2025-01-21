@@ -78,11 +78,11 @@ Error Handling: Manages connection issues gracefully with retry mechanisms and u
 
 Clone the repository: git clone https://github.com/vishwa-p/signage-system
 
-Navigate to the dashboard directory: cd dashboard
+Navigate to the dashboard directory: cd web-dashboard
 
 Install dependencies: npm install
 
-Start the development server: npm start
+Start the development server:  node app.js 
 
 For production, deploy the dashboard using Vercel or your preferred hosting platform.
 
@@ -92,7 +92,7 @@ Navigate to the electron-app directory: cd electron-app
 
 Install dependencies: npm install
 
-Start the application: npm start
+Start the application: npx electron .
 
 For production, package the app using Electron Builder: npm run build
 
