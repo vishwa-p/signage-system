@@ -6,6 +6,7 @@ const path = require("path");
 const app = express();
 const port = 8080;
 app.use(express.static(path.join(__dirname, "public")));
+app.set("views", path.join(__dirname, "views"));
 
 const dbPath = path.join(__dirname, "../db/signage.db");
 const db = new sqlite3.Database(dbPath, (err) => {
@@ -90,16 +91,34 @@ app.get("/content", (req, res) => {
 });
 
 // API endpoint to fetch content list
-app.get('/api/content', (req, res) => {
-  db.all('SELECT * FROM content ORDER BY timestamp DESC', [], (err, rows) => {
+// app.get('/api/content', (req, res) => {
+//   db.all('SELECT * FROM content ORDER BY timestamp DESC', [], (err, rows) => {
+//     if (err) {
+//       console.error('Error fetching data:', err.message);
+//       res.status(500).json({ status: 'error', message: err.message });
+//     } else {
+//       res.json({ status: 'success', data: rows });
+//     }
+//   });
+// });
+// Serve the HTML content list page (if needed)
+app.get("/content-list", (req, res) => {
+  db.all("SELECT * FROM content", [], (err, rows) => {
     if (err) {
-      console.error('Error fetching data:', err.message);
-      res.status(500).json({ status: 'error', message: err.message });
+      console.error("Error fetching data:", err.message);
+      res.status(500).send("Error fetching content");
     } else {
-      res.json({ status: 'success', data: rows });
+      // Parse canvas_data for easier usage on the front-end
+      const processedRows = rows.map(row => ({
+        ...row,
+        canvas_data: JSON.parse(row.canvas_data) ,// Parse JSON string
+        status: row.timestamp > Date.now() - 24 * 60 * 60 * 1000 ? "Active" : "Error" // Example logic
+      }));
+      res.render("content-list", { content: processedRows }); // Pass parsed data
     }
   });
 });
+
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

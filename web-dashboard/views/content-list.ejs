@@ -5,14 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content List</title>
     <link rel="stylesheet" href="/public/styles.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .status-indicator {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+        }
+        .status-indicator.active {
+            background-color: #28a745;
+        }
+        .status-indicator.draft {
+            background-color: #ffc107;
+        }
+        .status-indicator.error {
+            background-color: #dc3545;
+        }
+        canvas {
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
     <h1>Content List</h1>
-    <ul>
-        <% content.forEach(item => { %>
-            <li><strong><%= item.title %></strong> - Type: <%= item.type %></li>
-        <% }) %>
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Screen Key</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% content.forEach(item => { %>
+              <tr>
+                <td><%= item.screen_key %></td>
+                <td>
+                  <!-- Canvas element with dynamic data -->
+                  <canvas
+                    class="previewCanvas"
+                    data-canvasdata='<%= JSON.stringify(item.canvas_data) %>'
+                    width="50"
+                    height="50">
+                  </canvas>
+                </td>
+                <td>
+                  <span class="status-indicator">
+                    <%= item.status || "Unknown" %>
+                  </span>
+                </td>
+                <td><%= new Date(item.timestamp).toLocaleString() %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+          
+      
+        
+    </table>
+
     <a href="/editor">Go to Editor</a>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const canvases = document.querySelectorAll(".previewCanvas");
+      
+          canvases.forEach(canvas => {
+            const ctx = canvas.getContext("2d");
+            const data = JSON.parse(canvas.getAttribute("data-canvasdata"));
+      
+            if (data) {
+              // Draw rectangle based on `canvas_data`
+              ctx.fillStyle = data.color || "gray"; // Default to gray if no color
+              ctx.fillRect(data.x || 5, data.y || 5, data.width || 40, data.height || 40);
+            }
+          });
+        });
+      </script>
 </body>
 </html>

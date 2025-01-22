@@ -183,6 +183,71 @@
             font-size: 12px;
             color: #007bff;
         }
+
+        .toggle-switch {
+            margin-top: 500px;
+            margin-right: 10px;
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 25px;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 25px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: '';
+            height: 21px;
+            width: 21px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #2196F3;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(25px);
+        }
+        /* Tooltip Styles */
+    .tooltip {
+        display: none;
+        position: absolute;
+        bottom: 35px; /* Adjust tooltip position */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 1;
+    }
+
+    .toggle-switch:hover .tooltip {
+        display: block;
+    }
     </style>
 </head>
 
@@ -211,14 +276,21 @@
                 <div class="widget" id="addCircle">Circle</div>
                 <div class="widget" id="addTriangle">Triangle</div>
                 <button id="saveContent">Sync Content</button>
-                <button id="previewContent">Preview Content</button>
+                <!-- <button id="previewContent">Preview Content</button> -->
+                
             </div>
         </div>
 
         <!-- Canvas container in the center -->
         <div id="canvasContainer">
             <canvas id="canvas" width="800" height="500"></canvas>
+            
         </div>
+        <label class="toggle-switch" title="Preview" >
+            <input type="checkbox" id="previewContent">
+            <span class="slider"></span>
+            <div class="tooltip">Preview</div>
+        </label>
     </div>
 
     <!-- Preview Container -->
@@ -234,10 +306,13 @@
         <ul id="contentList"></ul>
     </div>
 
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let screenKey = null;
+        let previewWindow = null; // Variable to track the preview window
+        const previewCheckbox = document.getElementById('previewContent');
         // Initialize Fabric.js canvas
         const canvas = new fabric.Canvas('canvas', {
             selection: true, // Allow multiple selections for better manipulation
@@ -615,46 +690,100 @@
         }
 
         // Preview functionality
-        document.getElementById('previewContent').addEventListener('click', function () {
-            const previewWindow = window.open('', '_blank', 'width=800,height=600');
-            // Add content to the popup window
-            previewWindow.document.write(`
-        <html>
-        <head>
-            <title>Preview</title>
-            <style>
-                body {
-                    margin: 0;
-                    padding: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    background-color: #f4f4f4;
-                }
-                canvas {
-                    border: 1px solid #ccc;
-                }
-            </style>
-        </head>
-        <body>
-            <canvas id="previewCanvas" width="750" height="500"></canvas>
-        </body>
-        </html>
-    `);
+        //     document.getElementById('previewContent').addEventListener('click', function () {
+        //         const previewWindow = window.open('', '_blank', 'width=800,height=600');
+        //         // Add content to the popup window
+        //         previewWindow.document.write(`
+        //     <html>
+        //     <head>
+        //         <title>Preview</title>
+        //         <style>
+        //             body {
+        //                 margin: 0;
+        //                 padding: 0;
+        //                 display: flex;
+        //                 justify-content: center;
+        //                 align-items: center;
+        //                 height: 100vh;
+        //                 background-color: #f4f4f4;
+        //             }
+        //             canvas {
+        //                 border: 1px solid #ccc;
+        //             }
+        //         </style>
+        //     </head>
+        //     <body>
+        //         <canvas id="previewCanvas" width="750" height="500"></canvas>
+        //     </body>
+        //     </html>
+        // `);
 
-            // Wait for the new window to finish loading, then render the content
-            previewWindow.document.close(); // Close the document stream to allow JavaScript execution
+        //         // Wait for the new window to finish loading, then render the content
+        //         previewWindow.document.close(); // Close the document stream to allow JavaScript execution
 
-            previewWindow.onload = function () {
-                const previewCanvas = new fabric.Canvas(previewWindow.document.getElementById('previewCanvas'));
-                const jsonData = canvas.toJSON(); // Assuming `canvas` is the existing canvas object on your page
-                previewCanvas.loadFromJSON(jsonData, function () {
-                    previewCanvas.renderAll();
-                });
-            };
+        //         previewWindow.onload = function () {
+        //             const previewCanvas = new fabric.Canvas(previewWindow.document.getElementById('previewCanvas'));
+        //             const jsonData = canvas.toJSON(); // Assuming `canvas` is the existing canvas object on your page
+        //             previewCanvas.loadFromJSON(jsonData, function () {
+        //                 previewCanvas.renderAll();
+        //             });
+        //         };
+        //     });
+
+
+
+
+        previewCheckbox.addEventListener('change', function () {
+            if (previewCheckbox.checked) {
+                // If the toggle is on, open the preview window
+                previewWindow = window.open('', '_blank', 'width=800,height=600');
+
+                // Add content to the popup window
+                previewWindow.document.write(`
+                <html>
+                <head>
+                    <title>Preview</title>
+                    <style>
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                            background-color: #f4f4f4;
+                        }
+                        canvas {
+                            border: 1px solid #ccc;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <canvas id="previewCanvas" width="750" height="500"></canvas>
+                </body>
+                </html>
+            `);
+
+                previewWindow.document.close();
+
+                previewWindow.onload = function () {
+                    const previewCanvas = new fabric.Canvas(previewWindow.document.getElementById('previewCanvas'));
+                    const jsonData = canvas.toJSON(); // Assuming `canvas` is the existing canvas object on your page
+                    previewCanvas.loadFromJSON(jsonData, function () {
+                        previewCanvas.renderAll();
+                    });
+                };
+
+                previewWindow.onbeforeunload = function () {
+                    previewCheckbox.checked = false; // Reset the toggle when the window is closed
+                };
+            } else {
+                // If the toggle is off, close the window
+                if (previewWindow && !previewWindow.closed) {
+                    previewWindow.close();
+                }
+            }
         });
-
         function updateContentList() {
             contentList.innerHTML = ''; // Clear existing list
             canvas.getObjects().forEach((obj) => {

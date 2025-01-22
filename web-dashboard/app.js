@@ -50,12 +50,59 @@ app.post('/save-content', (req, res) => {
     );
 });
 
-app.get('/content-list', (req, res) => {
-    db.all('SELECT * FROM content', (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.render('content-list', { content: rows });
-    });
-});
+// app.get('/content-list', (req, res) => {
+//     db.all('SELECT * FROM content', (err, rows) => {
+//         if (err) return res.status(500).json({ error: err.message });
+//         res.render('content-list', { content: rows });
+//     });
+// });
 
+app.get('/api/content', (req, res) => {
+    db.all('SELECT * FROM content ORDER BY timestamp DESC', [], (err, rows) => {
+      if (err) {
+        console.error('Error fetching data:', err.message);
+        res.status(500).json({ status: 'error', message: err.message });
+      } else {
+        res.json({ status: 'success', data: rows });
+      }
+    });
+  });
+
+
+  app.get('/content-list', (req, res) => {
+    db.all('SELECT * FROM content ORDER BY timestamp DESC', [], (err, rows) => {
+      if (err) {
+        console.error('Error fetching data:', err.message);
+        res.status(500).send('Error fetching content data');
+      } else {
+        // Add status and statusClass to each content item
+        const contentWithStatus = rows.map(item => {
+          const currentTime = new Date();
+          const contentTime = new Date(item.timestamp);
+          const diffTime = currentTime - contentTime;
+  
+          let statusClass = 'error';
+          let statusText = 'Error';
+  
+          if (diffTime < 3600000) { // Less than 1 hour
+            statusClass = 'active';
+            statusText = 'Active';
+          } else if (diffTime < 86400000) { // Less than 1 day
+            statusClass = 'draft';
+            statusText = 'Draft';
+          }
+  
+          return {
+            ...item,
+            statusClass,
+            statusText
+          };
+        });
+  
+        // Pass the processed content to the view
+        res.render('content-list', { content: contentWithStatus });
+      }
+    });
+  });
 // Start the server
 app.listen(PORT, () => console.log(`Dashboard running on http://localhost:${PORT}`));
