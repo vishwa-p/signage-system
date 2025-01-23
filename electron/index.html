@@ -17,11 +17,13 @@
             font-family: Arial, sans-serif;
             height: 100vh;
         }
+
         #main-content img {
             max-width: 100%;
             height: auto;
             object-fit: cover;
         }
+
         #main-content {
             width: 100%;
             text-align: center;
@@ -96,53 +98,56 @@
 
         #message {
             margin-top: 15px;
-            font-size: 16px;
-            color: red;
+            font-size: 40px;
+            color: pink;
         }
 
         #canvas-container {
             margin-top: 20px;
             display: none;
-            /* Hidden until a canvas is successfully loaded */
         }
 
         canvas {
             border: 1px solid #ccc;
         }
 
-        input {
-            padding: 10px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
+        #loading-indicator {
+            margin-top: 15px;
+            color: #007bff;
+            display: none;
         }
 
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+        /* Loading Modal */
+        #loading-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Semi-transparent background */
+            width: 300px;
+            height: 150px;
+            display: none;
+            /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            /* Ensure it is above other content */
         }
 
-        button:hover {
-            background-color: #0056b3;
+        #loading-modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        #status {
-            padding: 10px;
+
+        #loadingIndicator {
             font-size: 18px;
             font-weight: bold;
-        }
-
-        #status.online {
-            color: green;
-        }
-
-        #status.offline {
-            color: red;
+            color: #007bff;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -158,6 +163,13 @@
         <h2>Enter Screen ID</h2>
         <input type="text" id="screenKey" placeholder="Enter or paste your ID" />
         <button id="fetchCanvas">Activate</button>
+        <!-- Loading Modal -->
+        <div id="loading-modal" style="display:none;">
+            <div id="loading-modal-content">
+                <p></p>
+                <div id="loadingIndicator">Please wait content is loading...</div>
+            </div>
+        </div>
     </div>
     <!-- Status Messages -->
     <div id="message"></div>
@@ -167,18 +179,15 @@
         <canvas id="displayCanvas" width="800" height="600"></canvas>
     </div>
 
-    <!-- <div id="status" class="offline">Checking status...</div> -->
-    <!-- Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <script>
-        // Elements
         const screenKeyInput = document.getElementById('screenKey');
         const fetchButton = document.getElementById('fetchCanvas');
         const messageElement = document.getElementById('message');
         const canvasContainer = document.getElementById('canvas-container');
         const canvas = document.getElementById('displayCanvas');
         const ctx = canvas.getContext('2d');
-
-        // Fabric.js canvas initialization
+        const imgLogo = document.getElementById('display-image');
         let fabricCanvas;
 
         fetchButton.addEventListener('click', async () => {
@@ -194,6 +203,10 @@
                 messageElement.textContent = 'Please enter a screen key.';
                 return;
             }
+
+            // Show the loading modal
+            const loadingModal = document.getElementById('loading-modal');
+            loadingModal.style.display = 'flex'; // Show the modal
 
             try {
                 // Fetch data from the API
@@ -211,7 +224,11 @@
                 const matchingContent = data.data.find(item => item.screen_key === screenKey);
 
                 if (!matchingContent) {
-                    messageElement.textContent = `No canvas found for screen key: ${screenKey}`;
+                    console.log("wrong********")
+                    alert(`No content found for screen key: ${screenKey}`);
+                    // messageElement.textContent = `No content found for screen key: ${screenKey}`;
+                    // messageElement.style.color = 'red'; // Set color to red for error
+                    // messageElement.style.display="block";
                     return;
                 }
 
@@ -228,20 +245,20 @@
                 fabricCanvas.loadFromJSON(canvasData, () => {
                     fabricCanvas.renderAll();
                     canvasContainer.style.display = 'block'; // Show the canvas container
-                    messageElement.textContent = 'Canvas loaded successfully!';
+                    messageElement.textContent = 'Content is loaded in full screen 1920x1080';
                     messageElement.style.color = 'green';
+                    imgLogo.style.display = 'none'; // Hide the logo
                 });
 
             } catch (error) {
                 console.error('Error:', error);
                 messageElement.textContent = 'An error occurred while fetching the canvas.';
+                messageElement.style.color = 'red'; // Set color to red for error
+            } finally {
+                // Hide the loading modal once data is fetched
+                loadingModal.style.display = 'none';
             }
         });
-    </script>
-
-    <!-- Add Fabric.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-    <script src="./renderer.js"></script>
     </script>
 </body>
 
