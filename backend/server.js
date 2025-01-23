@@ -48,8 +48,23 @@ wss.on("connection", (ws) => {
       const data = JSON.parse(message);
 
       if (data.action === "saveCanvas") {
-        const { screenKey, canvasData } = data;
+        // const { screenKey, canvasData } = data;
+        const screenKey = data.screenKey?.trim(); // Trim whitespace
+        const canvasData = data.canvasData;
+        // Validate input
+      if (!screenKey || !canvasData) {
+        ws.send(
+          JSON.stringify({
+            status: "error",
+            message: "screenKey and canvasData are required.",
+          })
+        );
+        return;
+      }
+        console.log("screenKey:", screenKey);
+        console.log("canvasData:", canvasData);
 
+         
         // Save the data to SQLite
         db.run(
           `INSERT INTO content (screen_key, canvas_data) VALUES (?, ?)`,

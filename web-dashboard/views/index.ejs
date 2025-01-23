@@ -228,26 +228,28 @@
         input:checked+.slider:before {
             transform: translateX(25px);
         }
-        /* Tooltip Styles */
-    .tooltip {
-        display: none;
-        position: absolute;
-        bottom: 35px; /* Adjust tooltip position */
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 1;
-    }
 
-    .toggle-switch:hover .tooltip {
-        display: block;
-    }
+        /* Tooltip Styles */
+        .tooltip {
+            display: none;
+            position: absolute;
+            bottom: 35px;
+            /* Adjust tooltip position */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        .toggle-switch:hover .tooltip {
+            display: block;
+        }
     </style>
 </head>
 
@@ -277,16 +279,16 @@
                 <div class="widget" id="addTriangle">Triangle</div>
                 <button id="saveContent">Sync Content</button>
                 <!-- <button id="previewContent">Preview Content</button> -->
-                
+
             </div>
         </div>
 
         <!-- Canvas container in the center -->
         <div id="canvasContainer">
             <canvas id="canvas" width="800" height="500"></canvas>
-            
+
         </div>
-        <label class="toggle-switch" title="Preview" >
+        <label class="toggle-switch" title="Preview">
             <input type="checkbox" id="previewContent">
             <span class="slider"></span>
             <div class="tooltip">Preview</div>
@@ -306,7 +308,7 @@
         <ul id="contentList"></ul>
     </div>
 
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -349,26 +351,33 @@
         const socket = new WebSocket('ws://localhost:8081'); // Connect to WebSocket server on port 8080
         socket.onopen = () => {
             console.log('Connected to WebSocket server!');
-            // Send saveCanvas data once connected
 
-            const canvasData = JSON.stringify(canvas.toJSON());// Example canvasData
+            const screenKey = ""; // Example default value, currently empty
+            const canvasData = canvas ? JSON.stringify(canvas) : null; // Null if canvas doesn't exist
 
-            socket.send(JSON.stringify({
-                action: 'saveCanvas',
-                screenKey,
-                canvasData
-            }));
+            // Only send saveCanvas data if both screenKey and canvasData are valid
+            if (screenKey && canvasData) {
+                socket.send(JSON.stringify({
+                    action: 'saveCanvas',
+                    screenKey,
+                    canvasData
+                }));
+            } else {
+                console.warn("screenKey or canvasData is missing, skipping saveCanvas.");
+            }
         };
-
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log('Received from backend:', data);
+
             if (data.status === 'success') {
-                alert('Canvas saved successfully!');
+                alert("Canvas Saved Successfully !")
+                console.log('Canvas saved successfully during initialization.');
             } else {
-                alert('Error saving canvas: ' + data.message);
+                console.warn('Error saving canvas during initialization: ' + data.message);
             }
         };
+
 
         socket.onerror = (error) => {
             console.error('WebSocket Error:', error);
@@ -630,55 +639,7 @@
         });
 
 
-        // Handle saving content
-        // document.getElementById('saveContent').addEventListener('click', () => {
-        //     console.log('Save Content Button Clicked');
-        //     console.log('Screen Key:', screenKey);
-
-        //     if (!screenKey) {
-        //         alert('Please generate a screen key before saving.');
-        //         return;
-        //     }
-
-        //     try {
-        //         const canvasData = JSON.stringify(canvas.toJSON());
-        //         console.log('Canvas Data:', canvasData);
-
-        //         const requestData = { screenKey, canvasData };
-
-        //         fetch('http://localhost:3000/api/saveCanvas', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //             },
-        //             body: JSON.stringify(requestData),
-        //         })
-        //             .then((response) => {
-        //                 console.log('Response Status:', response.status);
-        //                 if (!response.ok) {
-        //                     throw new Error(`HTTP error! status: ${response.status}`);
-        //                 }
-        //                 return response.json();
-        //             })
-        //             .then((data) => {
-        //                 console.log('Response Data:', data);
-        //                 if (data.error) {
-        //                     alert(`Error saving canvas: ${data.error}`);
-        //                 } else {
-        //                     alert('Canvas saved successfully!');
-        //                 }
-        //             })
-        //             .catch((error) => {
-        //                 console.error('Error during fetch:', error);
-        //                 alert('An error occurred while saving the canvas. Please try again.');
-        //             });
-        //     } catch (error) {
-        //         console.error('Unexpected error:', error);
-        //         alert('An unexpected error occurred.');
-        //     }
-        // });
-
-        // Function to retrieve canvas content
+        
         function loadCanvas(screenKey) {
             const canvasData = localStorage.getItem(screenKey);
             if (canvasData) {
