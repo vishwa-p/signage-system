@@ -13,6 +13,8 @@
     <meta property="og:url" content="http://yourwebsite.com">
     <title>Content Builder</title>
     <link rel="stylesheet" href="/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,8 +23,29 @@
             padding: 0;
             box-sizing: border-box;
             display: flex;
+            flex-direction: column;
             min-height: 100vh;
-            overflow: hidden;
+            /* overflow: hidden; */
+        }
+
+        #navbar {
+            height: 50px;
+            background: #1e1e1e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            /* Ensures the navbar stays at the top */
+            z-index: 1000;
+            /* Keeps the navbar above other content */
         }
 
         h1 {
@@ -35,6 +58,8 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            margin-top: 50px;
+            height: calc(100vh - 50px);
         }
 
         #sidebar {
@@ -45,6 +70,18 @@
             height: 100vh;
             overflow-y: auto;
             position: relative;
+        }
+
+        #saveContent {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            /* Ensure the button is not too close to other widgets */
         }
 
         #generateKeyContainer {
@@ -81,6 +118,7 @@
             align-items: center;
             padding: 20px;
             overflow: auto;
+            height: 100%;
         }
 
         #canvas {
@@ -93,7 +131,7 @@
         #toolbar {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
             position: sticky;
             top: 20px;
         }
@@ -112,6 +150,20 @@
 
         .widget:hover {
             background-color: #ddd;
+        }
+
+        .widget i {
+            margin-right: 10px;
+            /* Add space between the icon and text */
+            font-size: 16px;
+            /* Adjust icon size */
+            color: #333;
+            /* Adjust icon color */
+        }
+
+        .widget i:hover {
+            color: #007bff;
+            /* Change color on hover */
         }
 
         button {
@@ -177,6 +229,64 @@
             padding: 8px;
             border-bottom: 1px solid #ddd;
             font-size: 14px;
+        }
+
+        .rde-editor-items-item {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            padding: 5px;
+            background-color: #fff;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.3s ease;
+            position: relative;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .rde-editor-items-item-icon {
+            margin-right: 10px;
+        }
+
+        .rde-editor-items-item i {
+            font-size: 1.5em;
+            /* Icon size */
+            color: #333;
+            /* Icon color */
+        }
+
+        .rde-editor-items-item-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .rde-editor-items-item:hover {
+            background-color: #f4f4f9;
+            border-color: #007bff;
+        }
+
+        .rde-editor-items-item:active {
+            background-color: #e0e0e0;
+        }
+
+        .rde-editor-items-item i {
+            transition: color 0.3s ease;
+        }
+
+        .rde-editor-items-item:hover i {
+            color: #007bff;
+            /* Icon color on hover */
+        }
+
+        .rde-editor-items-item-text {
+            transition: color 0.3s ease;
+        }
+
+        .rde-editor-items-item:hover .rde-editor-items-item-text {
+            color: #007bff;
+            /* Text color on hover */
         }
 
         .status {
@@ -254,7 +364,14 @@
 </head>
 
 <body>
-
+    <div id="navbar">
+        <div>Content Builder Editor</div>
+        <div>
+            <!-- <a href="#">Home</a>
+            <a href="#">Projects</a>
+            <a href="#">Settings</a> -->
+        </div>
+    </div>
 
     <div id="mainContainer">
         <!-- Sidebar with widgets -->
@@ -264,23 +381,72 @@
                 <p id="screenKey"></p>
             </div>
             <div id="toolbar">
-                <div class="widget" id="addHeader">Header</div>
-                <div class="widget" id="addSlider">Slider</div>
-                <div class="widget" id="addDateTime">Time/Date</div>
-                <div class="widget" id="addIframe">Iframe</div>
-                <div class="widget" id="addImage">Image</div>
+                <div class="rde-editor-items-item" id="addHeader" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-heading"></i></span>
+                    <div class="rde-editor-items-item-text">Header</div>
+                </div>
+                <div class="rde-editor-items-item" id="addSlider" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-sliders-h"></i></span>
+                    <div class="rde-editor-items-item-text">Slider</div>
+                </div>
+                <div class="rde-editor-items-item" id="addDateTime" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-calendar-alt"></i></span>
+                    <div class="rde-editor-items-item-text">Time/Date</div>
+                </div>
+                <div class="rde-editor-items-item" id="addIframe" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-code"></i></span>
+                    <div class="rde-editor-items-item-text">Iframe</div>
+                </div>
+                <div class="rde-editor-items-item" id="addImage" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-image"></i></span>
+                    <div class="rde-editor-items-item-text">Image</div>
+                </div>
                 <input type="file" id="imageInput" style="display:none" accept="image/*">
                 <img id="previewImage" style="display:none;" width="200" height="200">
-
-                <div class="widget" id="addText">Text</div>
-                <div class="widget" id="addSquare">Square</div>
-                <div class="widget" id="addRectangle">Rectangle</div>
-                <div class="widget" id="addCircle">Circle</div>
-                <div class="widget" id="addTriangle">Triangle</div>
-                <button id="saveContent">Sync Content</button>
-                <!-- <button id="previewContent">Preview Content</button> -->
-
+                <div class="rde-editor-items-item" id="addText" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-text-height"></i></span>
+                    <div class="rde-editor-items-item-text">Text</div>
+                </div>
+                <div class="rde-editor-items-item" id="addSquare" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-square"></i></span>
+                    <div class="rde-editor-items-item-text">Square</div>
+                </div>
+                <div class="rde-editor-items-item" id="addRectangle" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-square"></i></span>
+                    <div class="rde-editor-items-item-text">Rectangle</div>
+                </div>
+                <div class="rde-editor-items-item" id="addCircle" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-circle"></i></span>
+                    <div class="rde-editor-items-item-text">Circle</div>
+                </div>
+                <div class="rde-editor-items-item" id="addTriangle" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="rde-editor-items-item-text">Triangle</div>
+                </div>
+               
+                <div class="rde-editor-items-item" id="addPolygon" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-draw-polygon"
+                            style="font-size: 1em;"></i></span>
+                    <div class="rde-editor-items-item-text">Polygon</div>
+                </div>
+                <div class="rde-editor-items-item" id="addLine" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-minus" style="font-size: 1em;"></i></span>
+                    <div class="rde-editor-items-item-text">Line</div>
+                </div>
+                <div class="rde-editor-items-item" id="addArrow" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-long-arrow-alt-right"
+                            style="font-size: 1em;"></i></span>
+                    <div class="rde-editor-items-item-text">Arrow</div>
+                </div>
+               
+                <div class="rde-editor-items-item" id="saveContent" draggable="true">
+                    <span class="rde-editor-items-item-icon"><i class="fas fa-sync"></i></span>
+                    <div class="rde-editor-items-item-text">Sync Content</div>
+                </div>
             </div>
+
+
+
         </div>
 
         <!-- Canvas container in the center -->
@@ -393,7 +559,6 @@
         const widgetSizes = {
             header: { width: 300, height: 50 },
             slider: { width: 400, height: 50 },
-
             datetime: { width: 250, height: 50 },
             iframe: { width: 250, height: 150 },
             image: { width: 150, height: 150 },
@@ -402,7 +567,11 @@
             rectangle: { width: 200, height: 100 },
             circle: { radius: 75 },
             triangle: { width: 100, height: 100 },
-
+            marker: { width: 50 },
+            polygon: { width: 150, height: 150 },
+            line: { width: 200, height: 10 },
+            arrow: { width: 30, height: 20 },
+            chart: { width: 200, height: 150 },
         };
 
         // Function to add widgets to the canvas
@@ -411,6 +580,7 @@
 
             switch (type) {
                 case 'header':
+                    console.log("header....")
                     widget = new fabric.Textbox('Header Text', {
                         left: 50,
                         top: 50,
@@ -572,16 +742,75 @@
                     });
                     widget.set({ widgetType: 'triangle' });
                     break;
+                case 'marker':
+                    widget = new fabric.Circle({
+                        left: 50,
+                        top: 200,
+                        radius: widgetSizes.marker.width / 2, // Ensure widgetSizes.marker is defined
+                        fill: 'yellow',
+                        stroke: 'black',  // Add border
+                        strokeWidth: 2,  // Border thickness
+                        shadow: new fabric.Shadow({  // Add shadow
+                            color: 'rgba(0,0,0,0.5)',
+                            blur: 5,
+                            offsetX: 3,
+                            offsetY: 3
+                        }),
+                        hasControls: true,
+                        lockRotation: true,
+                    });
+                    
+                    widget.set({ widgetType: 'Marker' });
+                    break;
 
+                case 'polygon':
+                    widget = new fabric.Polygon([
+                        { x: 50, y: 200 },
+                        { x: 150, y: 200 },
+                        { x: 100, y: 350 },
+                    ], {
+                        fill: 'orange',
+                        hasControls: true,
+                        lockRotation: true,
+                    });
+                    widget.set({ widgetType: 'Polygon' });
+                    break;
 
+                case 'line':
+                    // Define the line using the coordinates directly
+                    widget = new fabric.Line([50, 200, 250, 200], {
+                        stroke: 'black',
+                        strokeWidth: 2,
+                        hasControls: true,
+                        lockRotation: true,
+                    });
+                    widget.set({ widgetType: 'Line' });
+                    break;
+
+                case 'arrow':
+                    console.log('Adding Arrow Widget');
+                    widget = new fabric.Triangle({
+                        left: 50,
+                        top: 200,
+                        width: widgetSizes.arrow.width,
+                        height: widgetSizes.arrow.height,
+                        fill: 'green',
+                        angle: 90,
+                        hasControls: true,
+                        lockRotation: true,
+                    });
+                    widget.set({ widgetType: 'Arrow' });
+                    break;
+
+               
+                default:
                     return;
-
-
 
             }
 
             // Add widget to canvas
             canvas.add(widget);
+            canvas.bringToFront(widget);
             canvas.setActiveObject(widget);
             updatePreview();
             updateContentList();
@@ -599,6 +828,7 @@
                 }
             }
         });
+
         function updatePreview() {
             const previewCanvas = new fabric.Canvas('previewCanvas');
             const jsonData = canvas.toJSON();
@@ -618,7 +848,11 @@
         document.getElementById('addRectangle').addEventListener('click', () => addWidget('rectangle'));
         document.getElementById('addCircle').addEventListener('click', () => addWidget('circle'));
         document.getElementById('addTriangle').addEventListener('click', () => addWidget('triangle'));
-
+       
+        document.getElementById('addPolygon').addEventListener('click', () => addWidget('polygon'));
+        document.getElementById('addLine').addEventListener('click', () => addWidget('line'));
+        document.getElementById('addArrow').addEventListener('click', () => addWidget('arrow'));
+    
 
 
 
@@ -639,7 +873,7 @@
         });
 
 
-        
+
         function loadCanvas(screenKey) {
             const canvasData = localStorage.getItem(screenKey);
             if (canvasData) {
@@ -649,49 +883,6 @@
                 alert('No canvas found for the provided Screen Key.');
             }
         }
-
-        // Preview functionality
-        //     document.getElementById('previewContent').addEventListener('click', function () {
-        //         const previewWindow = window.open('', '_blank', 'width=800,height=600');
-        //         // Add content to the popup window
-        //         previewWindow.document.write(`
-        //     <html>
-        //     <head>
-        //         <title>Preview</title>
-        //         <style>
-        //             body {
-        //                 margin: 0;
-        //                 padding: 0;
-        //                 display: flex;
-        //                 justify-content: center;
-        //                 align-items: center;
-        //                 height: 100vh;
-        //                 background-color: #f4f4f4;
-        //             }
-        //             canvas {
-        //                 border: 1px solid #ccc;
-        //             }
-        //         </style>
-        //     </head>
-        //     <body>
-        //         <canvas id="previewCanvas" width="750" height="500"></canvas>
-        //     </body>
-        //     </html>
-        // `);
-
-        //         // Wait for the new window to finish loading, then render the content
-        //         previewWindow.document.close(); // Close the document stream to allow JavaScript execution
-
-        //         previewWindow.onload = function () {
-        //             const previewCanvas = new fabric.Canvas(previewWindow.document.getElementById('previewCanvas'));
-        //             const jsonData = canvas.toJSON(); // Assuming `canvas` is the existing canvas object on your page
-        //             previewCanvas.loadFromJSON(jsonData, function () {
-        //                 previewCanvas.renderAll();
-        //             });
-        //         };
-        //     });
-
-
 
 
         previewCheckbox.addEventListener('change', function () {
