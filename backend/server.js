@@ -52,19 +52,18 @@ wss.on("connection", (ws) => {
         const screenKey = data.screenKey?.trim(); // Trim whitespace
         const canvasData = data.canvasData;
         // Validate input
-      if (!screenKey || !canvasData) {
-        ws.send(
-          JSON.stringify({
-            status: "error",
-            message: "screenKey and canvasData are required.",
-          })
-        );
-        return;
-      }
+        if (!screenKey || !canvasData) {
+          ws.send(
+            JSON.stringify({
+              status: "error",
+              message: "screenKey and canvasData are required.",
+            })
+          );
+          return;
+        }
         console.log("screenKey:", screenKey);
         console.log("canvasData:", canvasData);
 
-         
         // Save the data to SQLite
         db.run(
           `INSERT INTO content (screen_key, canvas_data) VALUES (?, ?)`,
@@ -93,7 +92,12 @@ wss.on("connection", (ws) => {
   ws.on("close", () => {
     console.log("WebSocket connection closed.");
   });
-}); // Add GET route to fetch all saved content
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
+// Add GET route to fetch all saved content
 app.get("/content", (req, res) => {
   db.all(`SELECT * FROM content`, [], (err, rows) => {
     if (err) {
@@ -112,16 +116,16 @@ app.get("/content-list", (req, res) => {
       res.status(500).send("Error fetching content");
     } else {
       // Parse canvas_data for easier usage on the front-end
-      const processedRows = rows.map(row => ({
+      const processedRows = rows.map((row) => ({
         ...row,
-        canvas_data: JSON.parse(row.canvas_data) ,// Parse JSON string
-        status: row.timestamp > Date.now() - 24 * 60 * 60 * 1000 ? "Active" : "Error" // Example logic
+        canvas_data: JSON.parse(row.canvas_data), // Parse JSON string
+        status:
+          row.timestamp > Date.now() - 24 * 60 * 60 * 1000 ? "Active" : "Error", // Example logic
       }));
       res.render("content-list", { content: processedRows }); // Pass parsed data
     }
   });
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

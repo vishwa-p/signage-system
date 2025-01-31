@@ -209,6 +209,13 @@
             loadingModal.style.display = 'flex'; // Show the modal
 
             try {
+
+                // **Check API health before making a request**
+                const healthCheck = await fetch('http://localhost:8080/health');
+                if (!healthCheck.ok) {
+                    throw new Error(`Server is not available. Status: ${healthCheck.status}`);
+                }
+                
                 // Fetch data from the API
                 const response = await fetch('http://localhost:8080/content');
                 if (!response.ok) {
@@ -224,9 +231,9 @@
                 const matchingContent = data.data.find(item => item.screen_key === screenKey);
 
                 if (!matchingContent) {
-                 
+
                     alert(`No content found for screen key: ${screenKey}`);
-                
+
                     return;
                 }
 
