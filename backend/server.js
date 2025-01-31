@@ -105,18 +105,6 @@ app.get("/content", (req, res) => {
   });
 });
 
-// API endpoint to fetch content list
-// app.get('/api/content', (req, res) => {
-//   db.all('SELECT * FROM content ORDER BY timestamp DESC', [], (err, rows) => {
-//     if (err) {
-//       console.error('Error fetching data:', err.message);
-//       res.status(500).json({ status: 'error', message: err.message });
-//     } else {
-//       res.json({ status: 'success', data: rows });
-//     }
-//   });
-// });
-// Serve the HTML content list page (if needed)
 app.get("/content-list", (req, res) => {
   db.all("SELECT * FROM content", [], (err, rows) => {
     if (err) {

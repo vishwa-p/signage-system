@@ -50,12 +50,6 @@ app.post('/save-content', (req, res) => {
     );
 });
 
-// app.get('/content-list', (req, res) => {
-//     db.all('SELECT * FROM content', (err, rows) => {
-//         if (err) return res.status(500).json({ error: err.message });
-//         res.render('content-list', { content: rows });
-//     });
-// });
 
 app.get('/api/content', (req, res) => {
     db.all('SELECT * FROM content ORDER BY timestamp DESC', [], (err, rows) => {

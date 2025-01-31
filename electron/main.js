@@ -110,7 +110,7 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Example logic to simulate connection status changes
+//  logic to simulate connection status changes
 ipcMain.on('offline-status-request', (event) => {
   const isOnline = true; // Replace with actual status check logic
   console.log('Connection Status:', isOnline ? 'Online' : 'Offline');

@@ -224,11 +224,9 @@
                 const matchingContent = data.data.find(item => item.screen_key === screenKey);
 
                 if (!matchingContent) {
-                    console.log("wrong********")
+                 
                     alert(`No content found for screen key: ${screenKey}`);
-                    // messageElement.textContent = `No content found for screen key: ${screenKey}`;
-                    // messageElement.style.color = 'red'; // Set color to red for error
-                    // messageElement.style.display="block";
+                
                     return;
                 }
 
