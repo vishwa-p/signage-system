@@ -1,57 +1,12 @@
-// const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
-// const path = require('path');
-
-// let mainWindow;
-// let tray;
-// let isAutoSyncEnabled = false;
-
-// function createWindow() {
-//     mainWindow = new BrowserWindow({
-//         width: 1920,
-//         height: 1080,
-//         fullscreen: true,
-//         webPreferences: {
-//             preload: path.join(__dirname, 'preload.js'),
-//             contextIsolation: true,
-//             nodeIntegration: false,
-//         },
-//     });
-
-//     mainWindow.loadFile('index.html');
-//     mainWindow.on('closed', () => {
-//         mainWindow = null;
-//     });
-// }
-
-// app.whenReady().then(() => {
-//     createWindow();
-
-//     tray = new Tray(path.join(__dirname, 'icon.png')); // Add your icon here
-//     const contextMenu = Menu.buildFromTemplate([
-//         { label: 'Toggle Auto Sync', type: 'checkbox', click: toggleAutoSync },
-//         { label: 'Exit', click: () => app.quit() },
-//     ]);
-//     tray.setToolTip('Digital Signage Display');
-//     tray.setContextMenu(contextMenu);
-// });
-
-// app.on('window-all-closed', () => {
-//     if (process.platform !== 'darwin') app.quit();
-// });
-
-// function toggleAutoSync(menuItem) {
-//     isAutoSyncEnabled = menuItem.checked;
-//     mainWindow.webContents.send('auto-sync-toggle', isAutoSyncEnabled);
-// }
-
-// ipcMain.handle('get-connection-status', async () => {
-//     // Replace with actual connection status logic
-//     return { connected: true };
-// });
-
-
-const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
-const path = require('path');
+const {
+  app,
+  BrowserWindow,
+  Tray,
+  Menu,
+  ipcMain,
+  navigator,
+} = require("electron");
+const path = require("path");
 
 let mainWindow;
 let tray;
@@ -62,15 +17,15 @@ function createWindow() {
     height: 1080,
     fullscreen: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false, // Secure
       contextIsolation: true,
     },
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile("index.html");
 
-  mainWindow.on('close', (event) => {
+  mainWindow.on("close", (event) => {
     event.preventDefault();
     mainWindow.hide(); // Minimize to system tray
   });
@@ -79,44 +34,51 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  tray = new Tray(path.join(__dirname, 'tray-icon.png'));
+  tray = new Tray(path.join(__dirname, "icons8-system-tray-50.png"));
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Show',
+      label: "Show",
       click: () => {
         mainWindow.show();
       },
     },
     {
-      label: 'Exit',
+      label: "Exit",
       click: () => {
         app.quit();
       },
     },
   ]);
-  tray.setToolTip('Electron Display App');
+  tray.setToolTip("Electron Display App");
   tray.setContextMenu(contextMenu);
 
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
 //  logic to simulate connection status changes
-ipcMain.on('offline-status-request', (event) => {
-  const isOnline = true; // Replace with actual status check logic
-  console.log('Connection Status:', isOnline ? 'Online' : 'Offline');
-  event.sender.send('offline-status', isOnline); // Send status to renderer
-})
-
+ipcMain.on("offline-status-request", (event) => {
+  // Try to make an HTTP request to check if the system is online
+  http
+    .get("http://www.google.com", (res) => {
+      const isOnline = res.statusCode === 200; // If Google is reachable, we are online
+      console.log("Connection Status:", isOnline ? "Online" : "Offline");
+      event.sender.send("offline-status", isOnline); // Send status back to renderer
+    })
+    .on("error", () => {
+      console.log("Connection Status: Offline");
+      event.sender.send("offline-status", false); // If error occurs, send offline status
+    });
+});
 setTimeout(() => {
   const { BrowserWindow } = require('electron');
   const win = BrowserWindow.getAllWindows()[0]; // Get the active window

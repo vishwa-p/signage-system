@@ -149,16 +149,27 @@
             color: #007bff;
             margin-top: 10px;
         }
+        .online {
+            color: green;
+            font-weight: bold;
+        }
+
+        .offline {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
     <!-- Main Content -->
+      <div id="connection-status">Loading connection status...</div>
     <div id="main-content">
         <img id="display-image" src="logo.jpg" alt="Content">
     </div>
 
     <div id="container">
+        
         <p>Enter the screen key to receive your content on this device.</p>
         <h2>Enter Screen ID</h2>
         <input type="text" id="screenKey" placeholder="Enter or paste your ID" />
@@ -173,13 +184,14 @@
     </div>
     <!-- Status Messages -->
     <div id="message"></div>
-
+   
     <!-- Canvas Container -->
     <div id="canvas-container">
         <canvas id="displayCanvas" width="800" height="600"></canvas>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <script src="renderer.js"></script>
     <script>
         const screenKeyInput = document.getElementById('screenKey');
         const fetchButton = document.getElementById('fetchCanvas');

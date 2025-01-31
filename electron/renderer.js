@@ -75,23 +75,30 @@ function displayError(message) {
 
 
 // Request connection status from main process
+// Request connection status from main process
 ipcRenderer.send('offline-status-request');
 
 // Listen for the offline-status event
 ipcRenderer.on('offline-status', (event, status) => {
     console.log('Received Connection Status:', status ? 'Online' : 'Offline');
+
+    // Check if the status element exists
     const statusElement = document.getElementById('status');
 
     if (statusElement) {
+        // Update the status text and class based on the connection status
         if (status) {
             statusElement.textContent = 'Online';
-            statusElement.className = 'online';
+            statusElement.className = 'online';  // CSS class for online status
         } else {
             statusElement.textContent = 'Offline';
-            statusElement.className = 'offline';
+            statusElement.className = 'offline';  // CSS class for offline status
         }
+    } else {
+        console.warn('Status element not found in the DOM.');
     }
 });
+
 // Initial Load
 fetchContent();
 updateConnectionStatus();
