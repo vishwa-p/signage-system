@@ -48,6 +48,21 @@
             
         } */
 
+        #contextMenu ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+#contextMenu li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+#contextMenu li:hover {
+    background-color: #f0f0f0;
+}
+
         h1 {
             text-align: center;
             margin: 20px;
@@ -607,6 +622,19 @@
     let canvasScreens = [];
     let activeScreenIndex = 0;
 
+    // Create a context menu for download option
+    const contextMenu = document.createElement("div");
+    contextMenu.id = "contextMenu";
+    contextMenu.style.display = "none";
+    contextMenu.style.position = "absolute";
+    contextMenu.style.backgroundColor = "#fff";
+    contextMenu.style.border = "1px solid #ccc";
+    contextMenu.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
+    contextMenu.style.zIndex = "1000";
+    contextMenu.innerHTML = `<ul><li id="downloadOption">Download Canvas</li></ul>`;
+    document.body.appendChild(contextMenu);
+
+    
     function createCanvas(screenNumber) {
         let canvasWrapper = document.createElement("div");
         canvasWrapper.classList.add("canvas-wrapper");
@@ -630,6 +658,34 @@
         return fabricCanvas;
     }
 
+    // Function to download the active canvas as an image
+    function downloadCanvasAsImage(canvasIndex) {
+        const fabricCanvas = canvasScreens[canvasIndex];
+        const dataUrl = fabricCanvas.toDataURL({ format: 'png' });
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = `canvas-${canvasIndex + 1}.png`;
+        link.click();
+    }
+    // Event listener for the context menu (right-click) on each canvas thumbnail
+    function addContextMenuListener(screenThumbnail, index) {
+        screenThumbnail.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+
+            // Show the context menu
+            contextMenu.style.display = "block";
+            contextMenu.style.left = `${event.pageX}px`;
+            contextMenu.style.top = `${event.pageY}px`;
+
+            // Add event listener to the download option
+            const downloadOption = document.getElementById("downloadOption");
+            downloadOption.onclick = () => {
+                downloadCanvasAsImage(index);
+                contextMenu.style.display = "none"; // Close the context menu after download
+            };
+        });
+    }
+
     function addCanvasScreen() {
         let newScreenNumber = canvasScreens.length + 1;
         let newCanvas = createCanvas(newScreenNumber);
@@ -641,6 +697,7 @@
         screenThumbnail.addEventListener("click", () => switchCanvas(parseInt(screenThumbnail.dataset.index)));
 
         screensContainer.appendChild(screenThumbnail);
+        addContextMenuListener(screenThumbnail, canvasScreens.length - 1); // Add context menu listener for the new canvas
         switchCanvas(canvasScreens.length - 1);
     }
 
@@ -834,6 +891,10 @@
         fabricCanvas.add(widget);
         fabricCanvas.renderAll();
     }
+     // Hide the context menu when clicking anywhere else
+     document.addEventListener("click", function () {
+        contextMenu.style.display = "none";
+    });
 
     document.addEventListener("keydown", (event) => {
     if (event.key === "Delete" || event.key === "Backspace") {
